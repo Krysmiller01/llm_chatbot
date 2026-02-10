@@ -1,0 +1,34 @@
+import os
+from dotenv import load_dotenv
+from google import genai
+import argparse
+from google.genai import types
+
+load_dotenv()
+try:
+    api_key = os.environ.get("GEMINI_API_KEY")
+except:
+    raise RuntimeError("key = None maybe?")
+
+client = genai.Client(api_key=api_key)
+parser = argparse.ArgumentParser(description="Chatbot")
+parser.add_argument("user_prompt", type=str, help="User prompt")
+parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+args = parser.parse_args()
+messages =[types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
+response = client.models.generate_content(
+    model ="gemini-2.5-flash",
+    contents=messages
+    )
+if response.usage_metadata is None:
+    raise RuntimeError("data was none dude")
+usage = response.usage_metadata
+prompt_token = usage.prompt_token_count
+response_token = usage.candidates_token_count
+
+def chat_response(user_prompt, prompt_token, response_token, response):
+    if args.verbose == True:
+        print(f"User prompt: {user_prompt}\nPrompt tokens: {prompt_token}\nResponse tokens: {response_token}\nResponse:\n{response}")
+    if args.verbose == False:
+        print(f"{response}")
+chat_response(args.user_prompt, prompt_token, response_token, response.text)
