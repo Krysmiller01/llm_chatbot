@@ -22,6 +22,7 @@ response = client.models.generate_content(
     )
 if response.usage_metadata is None:
     raise RuntimeError("data was none dude")
+    
 usage = response.usage_metadata
 prompt_token = usage.prompt_token_count
 response_token = usage.candidates_token_count
